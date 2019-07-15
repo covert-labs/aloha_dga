@@ -1,29 +1,61 @@
-"""Train and test LSTM classifier"""
+"""Train and test CNN classifier"""
 import dga_classifier.data as data
 import numpy as np
 from keras.preprocessing import sequence
-from keras.models import Sequential
-from keras.layers.core import Dense, Dropout, Activation
-from keras.layers.embeddings import Embedding
-from keras.layers.recurrent import LSTM
 import sklearn
 from sklearn.model_selection import train_test_split
 
+from keras.models import Sequential, Model
+from keras.layers import Dense, Dropout, Activation, Conv1D, Input, Dense, concatenate
+from keras.optimizers import SGD
+from keras.layers.embeddings import Embedding
+from keras.layers.pooling import GlobalMaxPooling1D
+
 
 def build_model(max_features, maxlen):
-    """Build LSTM model"""
-    model = Sequential()
-    model.add(Embedding(max_features, 128, input_length=maxlen))
-    
-    model.add(LSTM(128))
-    model.add(Dropout(0.5))
-    model.add(Dense(1))
-    model.add(Activation('sigmoid'))
+    '''
+    Derived CNN model from Keegan Hines' Snowman
+        https://github.com/keeganhines/snowman/
+    '''
+    text_input = Input(shape = (maxlen,), name='text_input')
+    x = Embedding(input_dim=max_features, input_length=maxlen, output_dim=15)(text_input)
 
-    model.compile(loss='binary_crossentropy',
-                  optimizer='rmsprop')
+    conv_a = Conv1D(15,2, activation='relu')(x)
+    conv_b = Conv1D(15,4, activation='relu')(x)
+    conv_c = Conv1D(15,6, activation='relu')(x)
+
+    pool_a = GlobalMaxPooling1D()(conv_a)
+    pool_b = GlobalMaxPooling1D()(conv_b)
+    pool_c = GlobalMaxPooling1D()(conv_c)
+
+    flattened = concatenate(
+        [pool_a, pool_b, pool_c])
+
+    drop = Dropout(.2)(flattened)
+
+    # ALOHA DGA
+    #
+    #outputs = []
+    #for x in range(89): # main output + 88 DGA families
+    # for x in range(6): # main output + 5 summary labels
+    #     dense = Dense(1)(drop)
+    #     out = Activation("sigmoid")(dense)
+    #     outputs.append(out)
+    #model = Model(inputs=text_input, outputs=outputs)
+
+    dense = Dense(1)(drop)
+    out = Activation("sigmoid")(dense)
+    model = Model(inputs=text_input, outputs=out)
+
+    model.compile(
+        loss='binary_crossentropy',
+        optimizer='rmsprop',
+        metrics=['accuracy']
+    )
 
     return model
+
+
 
 def run(max_epoch=25, nfolds=10, batch_size=128):
     """Run train/test on logistic regression model"""
@@ -65,7 +97,7 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
         for ep in range(max_epoch):
             model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=1)
 
-            t_probs = model.predict_proba(X_holdout)
+            t_probs = model.predict(X_holdout)
             t_auc = sklearn.metrics.roc_auc_score(y_holdout, t_probs)
 
             print 'Epoch %d: auc = %f (best=%f)' % (ep, t_auc, best_auc)
@@ -74,7 +106,7 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
                 best_auc = t_auc
                 best_iter = ep
 
-                probs = model.predict_proba(X_test)
+                probs = model.predict(X_test)
 
                 out_data = {'y':y_test, 'labels': label_test, 'probs':probs, 'epochs': ep,
                             'confusion_matrix': sklearn.metrics.confusion_matrix(y_test, probs > .5)}

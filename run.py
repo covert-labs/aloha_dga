@@ -8,16 +8,25 @@ import numpy as np
 
 import dga_classifier.bigram as bigram
 import dga_classifier.lstm as lstm
+import dga_classifier.cnn as cnn
+import dga_classifier.cnn_lstm as cnn_lstm
 
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 
 RESULT_FILE = 'results.pkl'
 
-def run_experiments(isbigram=True, islstm=True, nfolds=10):
+def run_experiments(isbigram=True, islstm=True, iscnn=True, iscnn_lstm=True, nfolds=10):
     """Runs all experiments"""
     bigram_results = None
     lstm_results = None
+    cnn_results = None
+
+    if iscnn_lstm:
+        cnn_lstm_results = cnn_lstm.run(nfolds=nfolds)
+
+    if iscnn:
+        cnn_results = cnn.run(nfolds=nfolds)
 
     if isbigram:
         bigram_results = bigram.run(nfolds=nfolds)
@@ -25,15 +34,15 @@ def run_experiments(isbigram=True, islstm=True, nfolds=10):
     if islstm:
         lstm_results = lstm.run(nfolds=nfolds)
 
-    return bigram_results, lstm_results
+    return bigram_results, lstm_results, cnn_results, cnn_lstm_results
 
-def create_figs(isbigram=True, islstm=True, nfolds=10, force=False):
+def create_figs(isbigram=True, islstm=True, iscnn=True, iscnn_lstm=True, nfolds=10, force=False):
     """Create figures"""
     # Generate results if needed
     if force or (not os.path.isfile(RESULT_FILE)):
-        bigram_results, lstm_results = run_experiments(isbigram, islstm, nfolds)
+        bigram_results, lstm_results, cnn_results = run_experiments(isbigram, islstm, iscnn, nfolds)
 
-        results = {'bigram': bigram_results, 'lstm': lstm_results}
+        results = {'bigram': bigram_results, 'lstm': lstm_results, 'cnn': cnn_results, 'cnn_lstm': cnn_lstm_results}
 
         pickle.dump(results, open(RESULT_FILE, 'w'))
     else:
@@ -61,6 +70,28 @@ def create_figs(isbigram=True, islstm=True, nfolds=10, force=False):
             tpr.append(t_tpr)
         lstm_binary_fpr, lstm_binary_tpr, lstm_binary_auc = calc_macro_roc(fpr, tpr)
 
+    # xtract and calculate CNN ROC
+    if results['cnn']:
+        cnn_results = results['cnn']
+        fpr = []
+        tpr = []
+        for cnn_result in cnn_results:
+            t_fpr, t_tpr, _ = roc_curve(cnn_result['y'], cnn_result['probs'])
+            fpr.append(t_fpr)
+            tpr.append(t_tpr)
+        cnn_binary_fpr, cnn_binary_tpr, cnn_binary_auc = calc_macro_roc(fpr, tpr)
+
+    # xtract and calculate CNN ROC
+    if results['cnn_lstm']:
+        cnn_lstm_results = results['cnn_lstm']
+        fpr = []
+        tpr = []
+        for cnn_lstm_result in cnn_lstm_results:
+            t_fpr, t_tpr, _ = roc_curve(cnn_lstm_result['y'], cnn_lstm_result['probs'])
+            fpr.append(t_fpr)
+            tpr.append(t_tpr)
+        cnn_lstm_binary_fpr, cnn_lstm_binary_tpr, cnn_lstm_binary_auc = calc_macro_roc(fpr, tpr)
+
     # Save figure
     from matplotlib import pyplot as plt
     with plt.style.context('bmh'):
@@ -68,15 +99,19 @@ def create_figs(isbigram=True, islstm=True, nfolds=10, force=False):
                  label='LSTM (AUC = %.4f)' % (lstm_binary_auc, ), rasterized=True)
         plt.plot(bigram_binary_fpr, bigram_binary_tpr,
                  label='Bigrams (AUC = %.4f)' % (bigram_binary_auc, ), rasterized=True)
+        plt.plot(cnn_binary_fpr, cnn_binary_tpr,
+                 label='CNN (AUC = %.4f)' % (cnn_binary_auc, ), rasterized=True)
+        plt.plot(cnn_lstm_binary_fpr, cnn_lstm_binary_tpr,
+                 label='CNN+LSTM (AUC = %.4f)' % (cnn_binary_auc, ), rasterized=True)
 
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate', fontsize=22)
-        plt.ylabel('True Positive Rate', fontsize=22)
+        plt.xlabel('False Positive Rate', fontsize=18)
+        plt.ylabel('True Positive Rate', fontsize=18)
         plt.title('ROC - Binary Classification', fontsize=26)
-        plt.legend(loc="lower right", fontsize=22)
+        plt.legend(loc="lower right", fontsize=18)
 
-        plt.tick_params(axis='both', labelsize=22)
+        plt.tick_params(axis='both', labelsize=18)
         plt.savefig('results.png')
 
 def calc_macro_roc(fpr, tpr):

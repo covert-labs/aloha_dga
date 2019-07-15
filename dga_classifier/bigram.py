@@ -4,7 +4,7 @@ from keras.layers.core import Dense
 from keras.models import Sequential
 import sklearn
 from sklearn import feature_extraction
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 
 
 def build_model(max_features):
