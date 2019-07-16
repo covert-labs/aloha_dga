@@ -12,17 +12,17 @@ from sklearn.model_selection import train_test_split
 
 def build_model(max_features, maxlen):
     """Build LSTM model"""
-    model = Sequential()
-    model.add(Embedding(max_features, 128, input_length=maxlen))
-    
-    model.add(LSTM(128))
-    model.add(Dropout(0.5))
-    model.add(Dense(1))
-    model.add(Activation('sigmoid'))
 
+    text_input = Input(shape = (maxlen,), name='text_input')
+    x = Embedding(input_dim=max_features, input_length=maxlen, output_dim=128)(text_input)
+    x = LSTM(128)(x)
+    x = Dropout(0.5)(x)
+    x = Dense(1)(x)
+    out = Activation('sigmoid')(x)
+    
+    model = Model(inputs=text_input, outputs=out)
     model.compile(loss='binary_crossentropy',
                   optimizer='rmsprop')
-
     return model
 
 def run(max_epoch=25, nfolds=10, batch_size=128):

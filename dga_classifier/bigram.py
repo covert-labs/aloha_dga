@@ -9,11 +9,10 @@ from sklearn.model_selection import train_test_split
 
 def build_model(max_features):
     """Builds logistic regression model"""
-    model = Sequential()
-    model.add(Dense(1, input_dim=max_features, activation='sigmoid'))
-
-    model.compile(loss='binary_crossentropy',
-                  optimizer='adam')
+    vectorized_input = Input(shape = (maxlen,), name='text_input')
+    out = Dense(1, input_dim=max_features, activation='sigmoid')(vectorized_input)
+    model = Model(inputs=vectorized_input, outputs=out)
+    model.compile(loss='binary_crossentropy', optimizer='adam')
 
     return model
 
