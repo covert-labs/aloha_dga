@@ -99,24 +99,27 @@ def create_figs(isbigram=True, islstm=True, iscnn=True, iscnn_lstm=True, nfolds=
     # Save figure
     from matplotlib import pyplot as plt
     with plt.style.context('bmh'):
-        plt.plot(lstm_binary_fpr, lstm_binary_tpr,
-                 label='LSTM (AUC = %.4f)' % (lstm_binary_auc, ), rasterized=True)
-        plt.plot(bigram_binary_fpr, bigram_binary_tpr,
-                 label='Bigrams (AUC = %.4f)' % (bigram_binary_auc, ), rasterized=True)
-        plt.plot(cnn_binary_fpr, cnn_binary_tpr,
-                 label='CNN (AUC = %.4f)' % (cnn_binary_auc, ), rasterized=True)
         plt.plot(cnn_lstm_binary_fpr, cnn_lstm_binary_tpr,
                  label='CNN+LSTM (AUC = %.4f)' % (cnn_binary_auc, ), rasterized=True)
+        plt.plot(lstm_binary_fpr, lstm_binary_tpr,
+                 label='LSTM (AUC = %.4f)' % (lstm_binary_auc, ), rasterized=True)
+        plt.plot(cnn_binary_fpr, cnn_binary_tpr,
+                 label='CNN (AUC = %.4f)' % (cnn_binary_auc, ), rasterized=True)
+        plt.plot(bigram_binary_fpr, bigram_binary_tpr,
+                 label='Bigrams (AUC = %.4f)' % (bigram_binary_auc, ), rasterized=True)
 
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
         plt.xlabel('False Positive Rate', fontsize=18)
         plt.ylabel('True Positive Rate', fontsize=18)
         plt.title('ROC - Binary Classification', fontsize=26)
-        plt.legend(loc="lower right", fontsize=18)
-
+        plt.legend(loc="lower right", fontsize=14)
         plt.tick_params(axis='both', labelsize=18)
-        plt.savefig('results.png')
+        plt.savefig('results.png', pad_inches=0.25, bbox_inches='tight')
+
+        plt.xscale('log')
+        plt.xlim([0.0, 0.1])
+        plt.savefig('results-logscale.png', pad_inches=0.25, bbox_inches='tight')
 
 def calc_macro_roc(fpr, tpr):
     """Calcs macro ROC on log scale"""
