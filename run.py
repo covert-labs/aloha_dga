@@ -108,18 +108,24 @@ def create_figs(isbigram=True, islstm=True, iscnn=True, iscnn_lstm=True, nfolds=
         plt.plot(bigram_binary_fpr, bigram_binary_tpr,
                  label='Bigrams (AUC = %.4f)' % (bigram_binary_auc, ), rasterized=True)
 
-        plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
         plt.xlabel('False Positive Rate', fontsize=18)
         plt.ylabel('True Positive Rate', fontsize=18)
         plt.title('ROC - Binary Classification', fontsize=26)
         plt.legend(loc="lower right", fontsize=14)
         plt.tick_params(axis='both', labelsize=18)
-        plt.savefig('results.png', pad_inches=0.25, bbox_inches='tight')
 
+        # create ROC curves at various zooms at linear scale
+        for xmax in [0.2, 0.4, 0.6, 0.8, 1.0]:
+            plt.xlim([0.0, xmax])
+            plt.savefig('results-xmax-{xmax}.png'.format(xmax=xmax), pad_inches=0.25, bbox_inches='tight')
+
+        # create ROC curves at various zooms at log scale
         plt.xscale('log')
-        plt.xlim([0.0, 0.1])
-        plt.savefig('results-logscale.png', pad_inches=0.25, bbox_inches='tight')
+        for xmax in [0.5, 0.2, 0.1, 0.01, 0.001, 0.0001]:
+            plt.xlim([0.0, xmax])
+            plt.savefig('results-logscale-xmax-{xmax}.png'.format(xmax=xmax), pad_inches=0.25, bbox_inches='tight')
+
 
 def calc_macro_roc(fpr, tpr):
     """Calcs macro ROC on log scale"""
