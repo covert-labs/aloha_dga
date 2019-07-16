@@ -26,15 +26,19 @@ def build_model(max_features, maxlen):
     lstm = Dense(1)(lstm)
 
     conv_a = Conv1D(15,2, activation='relu')(x)
-    conv_b = Conv1D(15,4, activation='relu')(x)
-    conv_c = Conv1D(15,6, activation='relu')(x)
+    conv_b = Conv1D(15,3, activation='relu')(x)
+    conv_c = Conv1D(15,4, activation='relu')(x)
+    conv_d = Conv1D(15,5, activation='relu')(x)
+    conv_e = Conv1D(15,6, activation='relu')(x)
 
     pool_a = GlobalMaxPooling1D()(conv_a)
     pool_b = GlobalMaxPooling1D()(conv_b)
     pool_c = GlobalMaxPooling1D()(conv_c)
+    pool_d = GlobalMaxPooling1D()(conv_d)
+    pool_e = GlobalMaxPooling1D()(conv_e)
 
     flattened = concatenate(
-        [pool_a, pool_b, pool_c,lstm])
+        [pool_a, pool_b, pool_c, pool_d, pool_e, lstm])
 
     drop = Dropout(.2)(flattened)
 

@@ -18,18 +18,22 @@ def build_model(max_features, maxlen):
         https://github.com/keeganhines/snowman/
     '''
     text_input = Input(shape = (maxlen,), name='text_input')
-    x = Embedding(input_dim=max_features, input_length=maxlen, output_dim=15)(text_input)
+    x = Embedding(input_dim=max_features, input_length=maxlen, output_dim=128)(text_input)
 
     conv_a = Conv1D(15,2, activation='relu')(x)
-    conv_b = Conv1D(15,4, activation='relu')(x)
-    conv_c = Conv1D(15,6, activation='relu')(x)
+    conv_b = Conv1D(15,3, activation='relu')(x)
+    conv_c = Conv1D(15,4, activation='relu')(x)
+    conv_d = Conv1D(15,5, activation='relu')(x)
+    conv_e = Conv1D(15,6, activation='relu')(x)
 
     pool_a = GlobalMaxPooling1D()(conv_a)
     pool_b = GlobalMaxPooling1D()(conv_b)
     pool_c = GlobalMaxPooling1D()(conv_c)
+    pool_d = GlobalMaxPooling1D()(conv_d)
+    pool_e = GlobalMaxPooling1D()(conv_e)
 
     flattened = concatenate(
-        [pool_a, pool_b, pool_c])
+        [pool_a, pool_b, pool_c, pool_d, pool_e])
 
     drop = Dropout(.2)(flattened)
 
