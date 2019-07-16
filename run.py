@@ -23,15 +23,19 @@ def run_experiments(isbigram=True, islstm=True, iscnn=True, iscnn_lstm=True, nfo
     cnn_results = None
 
     if iscnn_lstm:
+        print '========== cnn_lstm =========='
         cnn_lstm_results = cnn_lstm.run(nfolds=nfolds)
 
     if iscnn:
+        print '========== cnn =========='
         cnn_results = cnn.run(nfolds=nfolds)
 
     if isbigram:
+        print '========== bigram =========='
         bigram_results = bigram.run(nfolds=nfolds)
 
     if islstm:
+        print '========== lstm =========='
         lstm_results = lstm.run(nfolds=nfolds)
 
     return bigram_results, lstm_results, cnn_results, cnn_lstm_results
@@ -40,7 +44,7 @@ def create_figs(isbigram=True, islstm=True, iscnn=True, iscnn_lstm=True, nfolds=
     """Create figures"""
     # Generate results if needed
     if force or (not os.path.isfile(RESULT_FILE)):
-        bigram_results, lstm_results, cnn_results = run_experiments(isbigram, islstm, iscnn, nfolds)
+        bigram_results, lstm_results, cnn_results, cnn_lstm_results = run_experiments(isbigram, islstm, iscnn, iscnn_lstm, nfolds=nfolds)
 
         results = {'bigram': bigram_results, 'lstm': lstm_results, 'cnn': cnn_results, 'cnn_lstm': cnn_lstm_results}
 
