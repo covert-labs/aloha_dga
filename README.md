@@ -6,9 +6,9 @@ This repo contains 4 classifers + 4 extensions of these that use Auxiliary Loss 
 
 Baseline Models:
 * Bigram - Endgame's Bigram model.
-* LSTM - Endgame's Bigram model.
+* LSTM - Endgame's LSTM model.
 * CNN - CNN adapted from [snowman](https://github.com/keeganhines/snowman).
-* LSTM + CNN - CNN adapted from [snowman](https://github.com/keeganhines/snowman), combined with LSTM as defined by [Deep Learning For Realtime Malware Detection (ShmooCon 2018)](https://www.youtube.com/watch?v=99hniQYB6VM)'s LSTM + CNN (see 13:17 for architecture) by Domenic Puzio and Kate Highnam
+* LSTM + CNN - CNN adapted from [snowman](https://github.com/keeganhines/snowman), combined with LSTM as defined by [Deep Learning For Realtime Malware Detection (ShmooCon 2018)](https://www.youtube.com/watch?v=99hniQYB6VM)'s LSTM + CNN (see 13:17 for architecture) by Domenic Puzio and Kate Highnam.
 
 ALOHA Extended Models (each simply use the malware family as additional labels)
 * ALOHA CNN
