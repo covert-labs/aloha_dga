@@ -1,6 +1,6 @@
 *.pyc
 __pycache__
 /traindata.pkl
-/results.png
+/results*.png
 /results.pkl
 
