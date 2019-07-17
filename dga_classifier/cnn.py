@@ -1,30 +1,54 @@
-"""Train and test LSTM classifier"""
+"""Train and test CNN classifier"""
 import dga_classifier.data as data
 import numpy as np
 from keras.preprocessing import sequence
-from keras.layers.core import Dense, Dropout, Activation
-from keras.models import Sequential, Model
-from keras.layers import Input
-from keras.layers.embeddings import Embedding
-from keras.layers.recurrent import LSTM
 import sklearn
 from sklearn.model_selection import train_test_split
 
+from keras.models import Sequential, Model
+from keras.layers import Dense, Dropout, Activation, Conv1D, Input, Dense, concatenate
+from keras.optimizers import SGD
+from keras.layers.embeddings import Embedding
+from keras.layers.pooling import GlobalMaxPooling1D
+
 
 def build_model(max_features, maxlen):
-    """Build LSTM model"""
-
+    '''
+    Derived CNN model from Keegan Hines' Snowman
+        https://github.com/keeganhines/snowman/
+    '''
     text_input = Input(shape = (maxlen,), name='text_input')
     x = Embedding(input_dim=max_features, input_length=maxlen, output_dim=128)(text_input)
-    x = LSTM(128)(x)
-    x = Dropout(0.5)(x)
-    x = Dense(1)(x)
-    out = Activation('sigmoid')(x)
-    
+
+    conv_a = Conv1D(15,2, activation='relu')(x)
+    conv_b = Conv1D(15,3, activation='relu')(x)
+    conv_c = Conv1D(15,4, activation='relu')(x)
+    conv_d = Conv1D(15,5, activation='relu')(x)
+    conv_e = Conv1D(15,6, activation='relu')(x)
+
+    pool_a = GlobalMaxPooling1D()(conv_a)
+    pool_b = GlobalMaxPooling1D()(conv_b)
+    pool_c = GlobalMaxPooling1D()(conv_c)
+    pool_d = GlobalMaxPooling1D()(conv_d)
+    pool_e = GlobalMaxPooling1D()(conv_e)
+
+    flattened = concatenate(
+        [pool_a, pool_b, pool_c, pool_d, pool_e])
+
+    drop = Dropout(.2)(flattened)
+    dense = Dense(1)(drop)
+    out = Activation("sigmoid")(dense)
     model = Model(inputs=text_input, outputs=out)
-    model.compile(loss='binary_crossentropy',
-                  optimizer='rmsprop')
+
+    model.compile(
+        loss='binary_crossentropy',
+        optimizer='rmsprop',
+        metrics=['accuracy']
+    )
+
     return model
+
+
 
 def run(max_epoch=25, nfolds=10, batch_size=128):
     """Run train/test on logistic regression model"""

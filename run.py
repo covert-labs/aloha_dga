@@ -8,76 +8,65 @@ import numpy as np
 
 import dga_classifier.bigram as bigram
 import dga_classifier.lstm as lstm
+import dga_classifier.cnn as cnn
+import dga_classifier.cnn_lstm as cnn_lstm
+
+import dga_classifier.aloha_bigram as aloha_bigram
+import dga_classifier.aloha_lstm as aloha_lstm
+import dga_classifier.aloha_cnn as aloha_cnn
+import dga_classifier.aloha_cnn_lstm as aloha_cnn_lstm
 
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 
 RESULT_FILE = 'results.pkl'
 
-def run_experiments(isbigram=True, islstm=True, nfolds=10):
+def run_experiments(nfolds=10):
+
+    options = {
+        'nfolds': nfolds,
+        # enable for quick functional testing
+        # 'max_epoch':2
+    }
+
     """Runs all experiments"""
-    bigram_results = None
-    lstm_results = None
+    print '========== aloha_cnn_lstm =========='
+    aloha_cnn_lstm_results = aloha_cnn_lstm.run(**options)
 
-    if isbigram:
-        bigram_results = bigram.run(nfolds=nfolds)
+    print '========== aloha_cnn =========='
+    aloha_cnn_results = aloha_cnn.run(**options)
 
-    if islstm:
-        lstm_results = lstm.run(nfolds=nfolds)
+    print '========== aloha_bigram =========='
+    aloha_bigram_results = aloha_bigram.run(**options)
 
-    return bigram_results, lstm_results
+    print '========== aloha_lstm =========='
+    aloha_lstm_results = aloha_lstm.run(**options)
 
-def create_figs(isbigram=True, islstm=True, nfolds=10, force=False):
-    """Create figures"""
-    # Generate results if needed
-    if force or (not os.path.isfile(RESULT_FILE)):
-        bigram_results, lstm_results = run_experiments(isbigram, islstm, nfolds)
+    print '========== cnn_lstm =========='
+    cnn_lstm_results = cnn_lstm.run(**options)
 
-        results = {'bigram': bigram_results, 'lstm': lstm_results}
+    print '========== cnn =========='
+    cnn_results = cnn.run(**options)
 
-        pickle.dump(results, open(RESULT_FILE, 'w'))
-    else:
-        results = pickle.load(open(RESULT_FILE))
+    print '========== bigram =========='
+    bigram_results = bigram.run(**options)
 
-    # Extract and calculate bigram ROC
-    if results['bigram']:
-        bigram_results = results['bigram']
-        fpr = []
-        tpr = []
-        for bigram_result in bigram_results:
-            t_fpr, t_tpr, _ = roc_curve(bigram_result['y'], bigram_result['probs'])
-            fpr.append(t_fpr)
-            tpr.append(t_tpr)
-        bigram_binary_fpr, bigram_binary_tpr, bigram_binary_auc = calc_macro_roc(fpr, tpr)
+    print '========== lstm =========='
+    lstm_results = lstm.run(**options)
 
-    # xtract and calculate LSTM ROC
-    if results['lstm']:
-        lstm_results = results['lstm']
-        fpr = []
-        tpr = []
-        for lstm_result in lstm_results:
-            t_fpr, t_tpr, _ = roc_curve(lstm_result['y'], lstm_result['probs'])
-            fpr.append(t_fpr)
-            tpr.append(t_tpr)
-        lstm_binary_fpr, lstm_binary_tpr, lstm_binary_auc = calc_macro_roc(fpr, tpr)
-
-    # Save figure
-    from matplotlib import pyplot as plt
-    with plt.style.context('bmh'):
-        plt.plot(lstm_binary_fpr, lstm_binary_tpr,
-                 label='LSTM (AUC = %.4f)' % (lstm_binary_auc, ), rasterized=True)
-        plt.plot(bigram_binary_fpr, bigram_binary_tpr,
-                 label='Bigrams (AUC = %.4f)' % (bigram_binary_auc, ), rasterized=True)
-
-        plt.xlim([0.0, 1.0])
-        plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate', fontsize=22)
-        plt.ylabel('True Positive Rate', fontsize=22)
-        plt.title('ROC - Binary Classification', fontsize=26)
-        plt.legend(loc="lower right", fontsize=22)
-
-        plt.tick_params(axis='both', labelsize=22)
-        plt.savefig('results.png')
+    return {
+        'options': options,
+        'model_results': {
+            'aloha_bigram': aloha_bigram_results,
+            'aloha_lstm': aloha_lstm_results,
+            'aloha_cnn': aloha_cnn_results,
+            'aloha_cnn_lstm': aloha_cnn_lstm_results,
+            'bigram': bigram_results,
+            'lstm': lstm_results,
+            'cnn': cnn_results,
+            'cnn_lstm': cnn_lstm_results,
+        }
+    }
 
 def calc_macro_roc(fpr, tpr):
     """Calcs macro ROC on log scale"""
@@ -90,6 +79,102 @@ def calc_macro_roc(fpr, tpr):
         mean_tpr += interp(all_fpr, fpr[i], tpr[i])
 
     return all_fpr, mean_tpr / len(tpr), auc(all_fpr, mean_tpr) / len(tpr)
+
+def calculate_metrics(model_results):
+    fpr = []
+    tpr = []
+    for model_result in model_results:
+        t_fpr, t_tpr, _ = roc_curve(model_result['y'], model_result['probs'])
+        fpr.append(t_fpr)
+        tpr.append(t_tpr)
+    model_fpr, model_tpr, model_auc = calc_macro_roc(fpr, tpr)
+    return model_fpr, model_tpr, model_auc
+
+def create_figs(nfolds=10, force=False):
+    """Create figures"""
+    # Generate results if needed
+    if force or (not os.path.isfile(RESULT_FILE)):
+        results = run_experiments(nfolds=nfolds)
+        pickle.dump(results, open(RESULT_FILE, 'w'))
+    else:
+        results = pickle.load(open(RESULT_FILE))
+
+    metrics = []
+    for name, model_result in sorted(results['model_results'].items()):
+        if model_result is not None:
+
+            fpr, tpr, auc = calculate_metrics(model_result)
+            metrics.append({
+                'name': name,
+                'fpr': fpr,
+                'tpr': tpr,
+                'auc': auc,
+            })
+
+    colors = {
+        'lstm': 'green',
+        'cnn': 'red',
+        'bigram': 'blue',
+        'cnn_lstm': 'orange',
+    }
+
+    # these control which models get grouped together when ROC images get created.
+    metrics_filters = {
+        'all': ('lstm', 'aloha_lstm','cnn', 'aloha_cnn','cnn_lstm', 'aloha_cnn_lstm','bigram', 'aloha_bigram',),
+        'lstm': ('lstm', 'aloha_lstm',),
+        'cnn': ('cnn', 'aloha_cnn',),
+        'cnn_lstm': ('cnn_lstm', 'aloha_cnn_lstm',),
+        'bigram': ('bigram', 'aloha_bigram',),
+    }
+
+    # Save figures
+    from matplotlib import pyplot
+    with pyplot.style.context('bmh'):
+        for plot_name, metrics_filter in metrics_filters.items():
+            fig1, plt = pyplot.subplots()
+
+            metrics_to_plot = [rec for rec in metrics if rec['name'] in metrics_filter]
+            for metrics_record in sorted(metrics_to_plot, key=lambda rec: rec['auc'], reverse=True):
+
+                linestyle = '-'
+                if 'aloha' in metrics_record['name']:
+                    linestyle = ':'
+
+                color = colors[metrics_record['name'].replace('aloha_', '')]
+
+                plt.plot(
+                    metrics_record['fpr'],
+                    metrics_record['tpr'],
+                    label='%s (AUC = %.4f)' % (metrics_record['name'].upper(), metrics_record['auc'], ),
+                    rasterized=True,
+                    linestyle=linestyle,
+                    color=color,
+
+                )
+
+            plt.set_ylim([0.0, 1.05])
+            plt.set_xlabel('False Positive Rate', fontsize=16)
+            plt.set_ylabel('True Positive Rate', fontsize=16)
+            plt.set_title('ROC - Binary Classification (%s)'%(metrics_record['name'].upper(),), fontsize=20)
+            plt.legend(loc="best", fontsize=9)
+            plt.tick_params(axis='both', labelsize=16)
+
+            # create ROC curves at various zooms at linear scale
+            plt.set_xscale('linear')
+            for xmax in [0.2, 0.4, 0.6, 0.8, 1.0]:
+                plt.set_xlim([0.0, xmax])
+                fig1.savefig('results-linear-{plot_name}-{xmax}.png'.format(xmax=xmax, plot_name=plot_name), pad_inches=0.25, bbox_inches='tight')
+
+            # create ROC curves at various zooms at log scale
+            plt.set_xscale('log')
+            for xmax in [0.5, 0.2, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001]:
+                plt.set_xlim([0.0, xmax])
+                fig1.savefig('results-logscale-{plot_name}-{xmax}.png'.format(xmax=xmax, plot_name=plot_name), pad_inches=0.25, bbox_inches='tight')
+
+            for xmax in [1.05]:
+                plt.set_xlim([0.000001, xmax])
+                fig1.savefig('results-logscale-{plot_name}-0.000001-to-{xmax}.png'.format(xmax=xmax, plot_name=plot_name), pad_inches=0.25, bbox_inches='tight')
+
 
 if __name__ == "__main__":
     create_figs(nfolds=1) # Run with 1 to make it fast
