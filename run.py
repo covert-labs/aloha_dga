@@ -16,28 +16,19 @@ from sklearn.metrics import roc_curve, auc
 
 RESULT_FILE = 'results.pkl'
 
-def run_experiments(isbigram=True, islstm=True, iscnn=True, iscnn_lstm=True, nfolds=10):
-    """Runs all experiments"""
-    bigram_results = None
-    lstm_results = None
-    cnn_results = None
-    cnn_lstm_results = None
+def run_experiments(nfolds=10):
+    """Runs all experiments"""    
+    print '========== cnn_lstm =========='
+    cnn_lstm_results = cnn_lstm.run(nfolds=nfolds)
 
-    if iscnn_lstm:
-        print '========== cnn_lstm =========='
-        cnn_lstm_results = cnn_lstm.run(nfolds=nfolds)
+    print '========== cnn =========='
+    cnn_results = cnn.run(nfolds=nfolds)
 
-    if iscnn:
-        print '========== cnn =========='
-        cnn_results = cnn.run(nfolds=nfolds)
+    print '========== bigram =========='
+    bigram_results = bigram.run(nfolds=nfolds)
 
-    if isbigram:
-        print '========== bigram =========='
-        bigram_results = bigram.run(nfolds=nfolds)
-
-    if islstm:
-        print '========== lstm =========='
-        lstm_results = lstm.run(nfolds=nfolds)
+    print '========== lstm =========='
+    lstm_results = lstm.run(nfolds=nfolds)
 
     return {
         'bigram': bigram_results,
@@ -68,11 +59,11 @@ def calculate_metrics(model_results):
     model_fpr, model_tpr, model_auc = calc_macro_roc(fpr, tpr)
     return model_fpr, model_tpr, model_auc
 
-def create_figs(isbigram=True, islstm=True, iscnn=True, iscnn_lstm=True, nfolds=10, force=False):
+def create_figs(nfolds=10, force=False):
     """Create figures"""
     # Generate results if needed
     if force or (not os.path.isfile(RESULT_FILE)):
-        results = run_experiments(isbigram, islstm, iscnn, iscnn_lstm, nfolds=nfolds)
+        results = run_experiments(nfolds=nfolds)
         pickle.dump(results, open(RESULT_FILE, 'w'))
     else:
         results = pickle.load(open(RESULT_FILE))
