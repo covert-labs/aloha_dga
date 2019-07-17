@@ -1,7 +1,7 @@
 """Train and test bigram classifier"""
 import dga_classifier.data as data
-from keras.layers.core import Dense, Input
-from keras.models import Sequential
+from keras.layers.core import Dense
+from keras.layers import Input
 import sklearn
 from sklearn import feature_extraction
 from sklearn.model_selection import train_test_split
