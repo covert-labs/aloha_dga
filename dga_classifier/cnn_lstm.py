@@ -15,8 +15,12 @@ from keras.layers.recurrent import LSTM
 
 def build_model(max_features, maxlen):
     '''
-    Derived CNN model from Keegan Hines' Snowman
-        https://github.com/keeganhines/snowman/
+    [Deep Learning For Realtime Malware Detection (ShmooCon 2018)](https://www.youtube.com/watch?v=99hniQYB6VM)'s 
+    LSTM + CNN (see 13:17 for architecture) by Domenic Puzio and Kate Highnam
+
+    AND
+    
+    Derived CNN model from Keegan Hines' Snowman https://github.com/keeganhines/snowman/
     '''
     text_input = Input(shape = (maxlen,), name='text_input')
     x = Embedding(input_dim=max_features, input_length=maxlen, output_dim=128)(text_input)
@@ -41,17 +45,6 @@ def build_model(max_features, maxlen):
         [pool_a, pool_b, pool_c, pool_d, pool_e, lstm])
 
     drop = Dropout(.2)(flattened)
-
-    # ALOHA DGA
-    #
-    #outputs = []
-    #for x in range(89): # main output + 88 DGA families
-    # for x in range(6): # main output + 5 summary labels
-    #     dense = Dense(1)(drop)
-    #     out = Activation("sigmoid")(dense)
-    #     outputs.append(out)
-    #model = Model(inputs=text_input, outputs=outputs)
-
     dense = Dense(1)(drop)
     out = Activation("sigmoid")(dense)
     model = Model(inputs=text_input, outputs=out)

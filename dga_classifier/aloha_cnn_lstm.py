@@ -15,8 +15,12 @@ from keras.layers.recurrent import LSTM
 
 def build_model(max_features, maxlen, num_targets=1):
     '''
-    Derived CNN model from Keegan Hines' Snowman
-        https://github.com/keeganhines/snowman/
+    [Deep Learning For Realtime Malware Detection (ShmooCon 2018)](https://www.youtube.com/watch?v=99hniQYB6VM)'s 
+    LSTM + CNN (see 13:17 for architecture) by Domenic Puzio and Kate Highnam
+
+    AND
+    
+    Derived CNN model from Keegan Hines' Snowman https://github.com/keeganhines/snowman/
     '''
     text_input = Input(shape = (maxlen,), name='text_input')
     x = Embedding(input_dim=max_features, input_length=maxlen, output_dim=128)(text_input)
