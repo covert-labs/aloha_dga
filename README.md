@@ -7,6 +7,13 @@ the Alexa top 1 million as benign, but this repo generates its own domains for s
 We also only implement the LSTM and bigram classifier from the paper.  These are the two best 
 classifiers and are simple to implement in Keras.
 
+## Installation
+
+```
+conda create -n dga_predict python=2.7 scikit-learn keras tensorflow-gpu matplotlib
+pip install tldextract
+```
+
 ## Running the code
 
 `python run.py` will download and generate all the data, train and evaluate the classifier, and save a PNG to disk (the ROC curve). 
