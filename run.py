@@ -97,12 +97,12 @@ def create_figs(nfolds=10, force=False):
         results = run_experiments(nfolds=nfolds)
         pickle.dump(results, open(RESULT_FILE, 'w'))
     else:
-        results = pickle.load(open(RESULT_FILE))['model_results']
+        results = pickle.load(open(RESULT_FILE))
 
     # Save figures
     from matplotlib import pyplot as plt
     with plt.style.context('bmh'):
-        for name, model_result in results.items():
+        for name, model_result in results['model_results'].items():
             if model_result is not None:
                 fpr, tpr, auc = calculate_metrics(model_result)
                 plt.plot(fpr, tpr, label='%s (AUC = %.4f)' % (name.upper(), auc, ), rasterized=True)
