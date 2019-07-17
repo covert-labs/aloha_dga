@@ -56,7 +56,7 @@ def run(max_epoch=50, nfolds=10, batch_size=128):
         for ep in range(max_epoch):
             model.fit(X_train.todense(), y_train, batch_size=batch_size, nb_epoch=1)
 
-            t_probs = model.predict_proba(X_holdout.todense())
+            t_probs = model.predict(X_holdout.todense())
             t_auc = sklearn.metrics.roc_auc_score(y_holdout, t_probs)
 
             print 'Epoch %d: auc = %f (best=%f)' % (ep, t_auc, best_auc)
@@ -65,7 +65,7 @@ def run(max_epoch=50, nfolds=10, batch_size=128):
                 best_auc = t_auc
                 best_iter = ep
 
-                probs = model.predict_proba(X_test.todense())
+                probs = model.predict(X_test.todense())
 
                 out_data = {'y':y_test, 'labels': label_test, 'probs':probs, 'epochs': ep,
                             'confusion_matrix': sklearn.metrics.confusion_matrix(y_test, probs > .5)}
