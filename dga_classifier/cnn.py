@@ -79,8 +79,8 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
 
     for fold in range(nfolds):
         print "fold %u/%u" % (fold+1, nfolds)
-        train_test = train_test_split(X, labels, *all_Ys, test_size=0.2)
-        X_train, X_test, _, label_test, y_train, y_test = train_test[:6]
+        train_test = train_test_split(X, labels, *all_Ys, test_size=0.2, stratify=labels)
+        X_train, X_test, label_train, label_test, y_train, y_test = train_test[:6]
         dga_training_test = train_test[6:]
 
         all_Y_train = [y_train]
@@ -91,7 +91,7 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
         model = build_model(max_features, maxlen, num_targets=len(malware_labels) + 1)
 
         print "Train..."
-        train_test = train_test_split(X_train, *all_Y_train, test_size=0.05)
+        train_test = train_test_split(X_train, *all_Y_train, test_size=0.05, stratify=label_train)
         X_train, X_holdout, y_train, y_holdout = train_test[:4]
         dga_training_test = train_test[4:]
         all_Y_train = [y_train]

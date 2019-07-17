@@ -17,24 +17,34 @@ from sklearn.metrics import roc_curve, auc
 RESULT_FILE = 'results.pkl'
 
 def run_experiments(nfolds=10):
-    """Runs all experiments"""    
+
+    options = {
+        'nfolds': nfolds, 
+        'max_epoch':2, 
+        'labels_limit': 1
+    }
+
+    """Runs all experiments"""
     print '========== cnn_lstm =========='
-    cnn_lstm_results = cnn_lstm.run(nfolds=nfolds)
+    cnn_lstm_results = cnn_lstm.run(**options)
 
     print '========== cnn =========='
-    cnn_results = cnn.run(nfolds=nfolds)
+    cnn_results = cnn.run(**options)
 
     print '========== bigram =========='
-    bigram_results = bigram.run(nfolds=nfolds)
+    bigram_results = bigram.run(**options)
 
     print '========== lstm =========='
-    lstm_results = lstm.run(nfolds=nfolds)
+    lstm_results = lstm.run(**options)
 
     return {
-        'bigram': bigram_results,
-        'lstm': lstm_results,
-        'cnn': cnn_results,
-        'cnn_lstm': cnn_lstm_results
+        'options': options,
+        'model_results': {
+            'bigram': bigram_results,
+            'lstm': lstm_results,
+            'cnn': cnn_results,
+            'cnn_lstm': cnn_lstm_results
+        }
     }
 
 def calc_macro_roc(fpr, tpr):
@@ -66,7 +76,7 @@ def create_figs(nfolds=10, force=False):
         results = run_experiments(nfolds=nfolds)
         pickle.dump(results, open(RESULT_FILE, 'w'))
     else:
-        results = pickle.load(open(RESULT_FILE))
+        results = pickle.load(open(RESULT_FILE))['model_results']
 
     # Save figures
     from matplotlib import pyplot as plt
