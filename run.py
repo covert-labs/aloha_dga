@@ -21,111 +21,34 @@ def run_experiments(isbigram=True, islstm=True, iscnn=True, iscnn_lstm=True, nfo
     bigram_results = None
     lstm_results = None
     cnn_results = None
+    cnn_lstm_results = None
+
+    #
+    #  TODO: remove the "max_epoch=2" after functional testing is done
+    #
 
     if iscnn_lstm:
         print '========== cnn_lstm =========='
-        cnn_lstm_results = cnn_lstm.run(nfolds=nfolds)
+        cnn_lstm_results = cnn_lstm.run(nfolds=nfolds, max_epoch=2)
 
     if iscnn:
         print '========== cnn =========='
-        cnn_results = cnn.run(nfolds=nfolds)
+        cnn_results = cnn.run(nfolds=nfolds, max_epoch=2)
 
     if isbigram:
         print '========== bigram =========='
-        bigram_results = bigram.run(nfolds=nfolds)
+        bigram_results = bigram.run(nfolds=nfolds, max_epoch=2)
 
     if islstm:
         print '========== lstm =========='
-        lstm_results = lstm.run(nfolds=nfolds)
+        lstm_results = lstm.run(nfolds=nfolds, max_epoch=2)
 
-    return bigram_results, lstm_results, cnn_results, cnn_lstm_results
-
-def create_figs(isbigram=True, islstm=True, iscnn=True, iscnn_lstm=True, nfolds=10, force=False):
-    """Create figures"""
-    # Generate results if needed
-    if force or (not os.path.isfile(RESULT_FILE)):
-        bigram_results, lstm_results, cnn_results, cnn_lstm_results = run_experiments(isbigram, islstm, iscnn, iscnn_lstm, nfolds=nfolds)
-
-        results = {'bigram': bigram_results, 'lstm': lstm_results, 'cnn': cnn_results, 'cnn_lstm': cnn_lstm_results}
-
-        pickle.dump(results, open(RESULT_FILE, 'w'))
-    else:
-        results = pickle.load(open(RESULT_FILE))
-
-    # Extract and calculate bigram ROC
-    if results['bigram']:
-        bigram_results = results['bigram']
-        fpr = []
-        tpr = []
-        for bigram_result in bigram_results:
-            t_fpr, t_tpr, _ = roc_curve(bigram_result['y'], bigram_result['probs'])
-            fpr.append(t_fpr)
-            tpr.append(t_tpr)
-        bigram_binary_fpr, bigram_binary_tpr, bigram_binary_auc = calc_macro_roc(fpr, tpr)
-
-    # xtract and calculate LSTM ROC
-    if results['lstm']:
-        lstm_results = results['lstm']
-        fpr = []
-        tpr = []
-        for lstm_result in lstm_results:
-            t_fpr, t_tpr, _ = roc_curve(lstm_result['y'], lstm_result['probs'])
-            fpr.append(t_fpr)
-            tpr.append(t_tpr)
-        lstm_binary_fpr, lstm_binary_tpr, lstm_binary_auc = calc_macro_roc(fpr, tpr)
-
-    # xtract and calculate CNN ROC
-    if results['cnn']:
-        cnn_results = results['cnn']
-        fpr = []
-        tpr = []
-        for cnn_result in cnn_results:
-            t_fpr, t_tpr, _ = roc_curve(cnn_result['y'], cnn_result['probs'])
-            fpr.append(t_fpr)
-            tpr.append(t_tpr)
-        cnn_binary_fpr, cnn_binary_tpr, cnn_binary_auc = calc_macro_roc(fpr, tpr)
-
-    # xtract and calculate CNN ROC
-    if results['cnn_lstm']:
-        cnn_lstm_results = results['cnn_lstm']
-        fpr = []
-        tpr = []
-        for cnn_lstm_result in cnn_lstm_results:
-            t_fpr, t_tpr, _ = roc_curve(cnn_lstm_result['y'], cnn_lstm_result['probs'])
-            fpr.append(t_fpr)
-            tpr.append(t_tpr)
-        cnn_lstm_binary_fpr, cnn_lstm_binary_tpr, cnn_lstm_binary_auc = calc_macro_roc(fpr, tpr)
-
-    # Save figure
-    from matplotlib import pyplot as plt
-    with plt.style.context('bmh'):
-        plt.plot(cnn_lstm_binary_fpr, cnn_lstm_binary_tpr,
-                 label='CNN+LSTM (AUC = %.4f)' % (cnn_binary_auc, ), rasterized=True)
-        plt.plot(lstm_binary_fpr, lstm_binary_tpr,
-                 label='LSTM (AUC = %.4f)' % (lstm_binary_auc, ), rasterized=True)
-        plt.plot(cnn_binary_fpr, cnn_binary_tpr,
-                 label='CNN (AUC = %.4f)' % (cnn_binary_auc, ), rasterized=True)
-        plt.plot(bigram_binary_fpr, bigram_binary_tpr,
-                 label='Bigrams (AUC = %.4f)' % (bigram_binary_auc, ), rasterized=True)
-
-        plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate', fontsize=18)
-        plt.ylabel('True Positive Rate', fontsize=18)
-        plt.title('ROC - Binary Classification', fontsize=26)
-        plt.legend(loc="lower right", fontsize=14)
-        plt.tick_params(axis='both', labelsize=18)
-
-        # create ROC curves at various zooms at linear scale
-        for xmax in [0.2, 0.4, 0.6, 0.8, 1.0]:
-            plt.xlim([0.0, xmax])
-            plt.savefig('results-xmax-{xmax}.png'.format(xmax=xmax), pad_inches=0.25, bbox_inches='tight')
-
-        # create ROC curves at various zooms at log scale
-        plt.xscale('log')
-        for xmax in [0.5, 0.2, 0.1, 0.01, 0.001, 0.0001]:
-            plt.xlim([0.0, xmax])
-            plt.savefig('results-logscale-xmax-{xmax}.png'.format(xmax=xmax), pad_inches=0.25, bbox_inches='tight')
-
+    return {
+        'bigram': bigram_results,
+        'lstm': lstm_results,
+        'cnn': cnn_results,
+        'cnn_lstm': cnn_lstm_results
+    }
 
 def calc_macro_roc(fpr, tpr):
     """Calcs macro ROC on log scale"""
@@ -138,6 +61,52 @@ def calc_macro_roc(fpr, tpr):
         mean_tpr += interp(all_fpr, fpr[i], tpr[i])
 
     return all_fpr, mean_tpr / len(tpr), auc(all_fpr, mean_tpr) / len(tpr)
+
+def calculate_metrics(model_results):
+    fpr = []
+    tpr = []
+    for model_result in model_results:
+        t_fpr, t_tpr, _ = roc_curve(model_result['y'], model_result['probs'])
+        fpr.append(t_fpr)
+        tpr.append(t_tpr)
+    model_fpr, model_tpr, model_auc = calc_macro_roc(fpr, tpr)
+    return model_fpr, model_tpr, model_auc
+
+def create_figs(isbigram=True, islstm=True, iscnn=True, iscnn_lstm=True, nfolds=10, force=False):
+    """Create figures"""
+    # Generate results if needed
+    if force or (not os.path.isfile(RESULT_FILE)):
+        results = run_experiments(isbigram, islstm, iscnn, iscnn_lstm, nfolds=nfolds)
+        pickle.dump(results, open(RESULT_FILE, 'w'))
+    else:
+        results = pickle.load(open(RESULT_FILE))
+
+    # Save figures
+    from matplotlib import pyplot as plt
+    with plt.style.context('bmh'):
+        for name, model_result in results.items():
+            if model_result is not None:
+                fpr, tpr, auc = calculate_metrics(model_result)
+                plt.plot(fpr, tpr, label='%s (AUC = %.4f)' % (name.upper(), auc, ), rasterized=True)
+
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate', fontsize=18)
+        plt.ylabel('True Positive Rate', fontsize=18)
+        plt.title('ROC - Binary Classification', fontsize=26)
+        plt.legend(loc="lower right", fontsize=14)
+        plt.tick_params(axis='both', labelsize=18)
+
+        # create ROC curves at various zooms at linear scale
+        for xmax in [0.2, 0.4, 0.6, 0.8, 1.0]:
+            plt.xlim([0.0, xmax])
+            plt.savefig('results-linear-{xmax}.png'.format(xmax=xmax), pad_inches=0.25, bbox_inches='tight')
+
+        # create ROC curves at various zooms at log scale
+        plt.xscale('log')
+        for xmax in [0.5, 0.2, 0.1, 0.01, 0.001, 0.0001]:
+            plt.xlim([0.0, xmax])
+            plt.savefig('results-logscale-{xmax}.png'.format(xmax=xmax), pad_inches=0.25, bbox_inches='tight')
+
 
 if __name__ == "__main__":
     create_figs(nfolds=1) # Run with 1 to make it fast

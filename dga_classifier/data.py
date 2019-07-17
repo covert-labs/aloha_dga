@@ -130,3 +130,24 @@ def get_data(force=False):
     gen_data(force)
 
     return pickle.load(open(DATA_FILE))
+
+def get_malware_labels(labels):
+    malware_labels = list(set(labels))
+    malware_labels.remove('benign')
+    malware_labels.sort()
+    return malware_labels
+
+
+def expand_labels(labels):
+    '''
+    This function takes the labels as returned from get_data()
+    and it converts them into a list of lists of 0/1 labels per 
+    'benign' and per each malware family
+    '''
+
+    # Convert labels to 0-1
+    y = [0 if label == 'benign' else 1 for label in labels]
+    all_Ys = [y]
+    for malw_label in get_malware_labels(labels):
+        all_Ys.append([1 if label == malw_label else 0 for label in labels])
+    return all_Ys
