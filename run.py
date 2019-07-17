@@ -23,25 +23,21 @@ def run_experiments(isbigram=True, islstm=True, iscnn=True, iscnn_lstm=True, nfo
     cnn_results = None
     cnn_lstm_results = None
 
-    #
-    #  TODO: remove the "max_epoch=2" after functional testing is done
-    #
-
     if iscnn_lstm:
         print '========== cnn_lstm =========='
-        cnn_lstm_results = cnn_lstm.run(nfolds=nfolds, max_epoch=2)
+        cnn_lstm_results = cnn_lstm.run(nfolds=nfolds)
 
     if iscnn:
         print '========== cnn =========='
-        cnn_results = cnn.run(nfolds=nfolds, max_epoch=2)
+        cnn_results = cnn.run(nfolds=nfolds)
 
     if isbigram:
         print '========== bigram =========='
-        bigram_results = bigram.run(nfolds=nfolds, max_epoch=2)
+        bigram_results = bigram.run(nfolds=nfolds)
 
     if islstm:
         print '========== lstm =========='
-        lstm_results = lstm.run(nfolds=nfolds, max_epoch=2)
+        lstm_results = lstm.run(nfolds=nfolds)
 
     return {
         'bigram': bigram_results,

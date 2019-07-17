@@ -1,7 +1,8 @@
 """Train and test bigram classifier"""
 import dga_classifier.data as data
-from keras.layers.core import Dense
+from keras.layers.core import Dense, Dropout, Activation
 from keras.layers import Input
+from keras.models import Sequential, Model
 import sklearn
 from sklearn import feature_extraction
 from sklearn.model_selection import train_test_split
@@ -9,8 +10,8 @@ from sklearn.model_selection import train_test_split
 
 def build_model(max_features, num_targets=1):
     """Builds logistic regression model"""
-    vectorized_input = Input(shape = (maxlen,), name='text_input')
-    fc = Dense(1, input_dim=max_features, activation='sigmoid')(vectorized_input)
+    vectorized_input = Input(shape = (max_features,), name='text_input')
+    fc = Dense(1)(vectorized_input)
 
     outputs = []
     for x in range(num_targets):
