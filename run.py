@@ -99,19 +99,34 @@ def create_figs(nfolds=10, force=False):
     else:
         results = pickle.load(open(RESULT_FILE))
 
+    metrics = []
+    for name, model_result in sorted(results['model_results'].items()):
+        if model_result is not None:
+
+            fpr, tpr, auc = calculate_metrics(model_result)
+            metrics.append({
+                'name': name,
+                'fpr': fpr, 
+                'tpr': tpr, 
+                'auc': auc,
+            })
+
     # Save figures
     from matplotlib import pyplot as plt
     with plt.style.context('bmh'):
-        for name, model_result in results['model_results'].items():
-            if model_result is not None:
-                fpr, tpr, auc = calculate_metrics(model_result)
-                plt.plot(fpr, tpr, label='%s (AUC = %.4f)' % (name.upper(), auc, ), rasterized=True)
+        for metrics_record in sorted(metrics, key=lambda rec: rec['auc'], reverse=True):
+            plt.plot(
+                metrics_record['fpr'], 
+                metrics_record['tpr'], 
+                label='%s (AUC = %.4f)' % (metrics_record['name'].upper(), metrics_record['auc'], ), 
+                rasterized=True
+            )
 
         plt.ylim([0.0, 1.05])
         plt.xlabel('False Positive Rate', fontsize=18)
         plt.ylabel('True Positive Rate', fontsize=18)
         plt.title('ROC - Binary Classification', fontsize=26)
-        plt.legend(loc="lower right", fontsize=14)
+        plt.legend(loc="lower right", fontsize=10)
         plt.tick_params(axis='both', labelsize=18)
 
         # create ROC curves at various zooms at linear scale
