@@ -11,6 +11,11 @@ import dga_classifier.lstm as lstm
 import dga_classifier.cnn as cnn
 import dga_classifier.cnn_lstm as cnn_lstm
 
+import dga_classifier.aloha_bigram as aloha_bigram
+import dga_classifier.aloha_lstm as aloha_lstm
+import dga_classifier.aloha_cnn as aloha_cnn
+import dga_classifier.aloha_cnn_lstm as aloha_cnn_lstm
+
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 
@@ -18,13 +23,28 @@ RESULT_FILE = 'results.pkl'
 
 def run_experiments(nfolds=10):
 
+    #
+    # TODO remove the epoch limit after functional testing
+    #
+
     options = {
         'nfolds': nfolds, 
-        'max_epoch':2, 
-        'labels_limit': 1
+        'max_epoch':2
     }
 
     """Runs all experiments"""
+    print '========== aloha_cnn_lstm =========='
+    aloha_cnn_lstm_results = aloha_cnn_lstm.run(**options)
+
+    print '========== aloha_cnn =========='
+    aloha_cnn_results = aloha_cnn.run(**options)
+
+    print '========== aloha_bigram =========='
+    aloha_bigram_results = aloha_bigram.run(**options)
+
+    print '========== aloha_lstm =========='
+    aloha_lstm_results = aloha_lstm.run(**options)
+
     print '========== cnn_lstm =========='
     cnn_lstm_results = cnn_lstm.run(**options)
 
@@ -40,10 +60,14 @@ def run_experiments(nfolds=10):
     return {
         'options': options,
         'model_results': {
+            'aloha_bigram': aloha_bigram_results,
+            'aloha_lstm': aloha_lstm_results,
+            'aloha_cnn': aloha_cnn_results,
+            'aloha_cnn_lstm': aloha_cnn_lstm_results,
             'bigram': bigram_results,
             'lstm': lstm_results,
             'cnn': cnn_results,
-            'cnn_lstm': cnn_lstm_results
+            'cnn_lstm': cnn_lstm_results,
         }
     }
 
