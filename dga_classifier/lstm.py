@@ -77,7 +77,7 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
         out_data = {}
 
         for ep in range(max_epoch):
-            model.fit(X_train, all_Y_train, batch_size=batch_size, nb_epoch=1)
+            model.fit(X_train, all_Y_train, batch_size=batch_size, epochs=1)
 
             t_probs = model.predict(X_holdout)[0]
             t_auc = sklearn.metrics.roc_auc_score(y_holdout, t_probs)

@@ -7,7 +7,7 @@ from sklearn import feature_extraction
 from sklearn.model_selection import train_test_split
 
 
-def build_model(max_features):
+def build_model(max_features, num_targets=1):
     """Builds logistic regression model"""
     vectorized_input = Input(shape = (maxlen,), name='text_input')
     fc = Dense(1, input_dim=max_features, activation='sigmoid')(vectorized_input)
@@ -70,7 +70,7 @@ def run(max_epoch=50, nfolds=10, batch_size=128):
         out_data = {}
 
         for ep in range(max_epoch):
-            model.fit(X_train.todense(), all_Y_train, batch_size=batch_size, nb_epoch=1)
+            model.fit(X_train.todense(), all_Y_train, batch_size=batch_size, epochs=1)
 
             t_probs = model.predict(X_holdout.todense())[0]
             t_auc = sklearn.metrics.roc_auc_score(y_holdout, t_probs)
