@@ -3,7 +3,7 @@ import dga_classifier.data as data
 import numpy as np
 from keras.preprocessing import sequence
 from keras.models import Sequential
-from keras.layers.core import Dense, Dropout, Activation
+from keras.layers.core import Dense, Dropout, Activation, Input
 from keras.layers.embeddings import Embedding
 from keras.layers.recurrent import LSTM
 import sklearn
