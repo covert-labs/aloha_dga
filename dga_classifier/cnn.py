@@ -12,7 +12,7 @@ from keras.layers.embeddings import Embedding
 from keras.layers.pooling import GlobalMaxPooling1D
 
 
-def build_model(max_features, maxlen):
+def build_model(max_features, maxlen, num_targets=1):
     '''
     Derived CNN model from Keegan Hines' Snowman
         https://github.com/keeganhines/snowman/
@@ -37,19 +37,12 @@ def build_model(max_features, maxlen):
 
     drop = Dropout(.2)(flattened)
 
-    # ALOHA DGA
-    #
-    #outputs = []
-    #for x in range(89): # main output + 88 DGA families
-    # for x in range(6): # main output + 5 summary labels
-    #     dense = Dense(1)(drop)
-    #     out = Activation("sigmoid")(dense)
-    #     outputs.append(out)
-    #model = Model(inputs=text_input, outputs=outputs)
-
-    dense = Dense(1)(drop)
-    out = Activation("sigmoid")(dense)
-    model = Model(inputs=text_input, outputs=out)
+    outputs = []
+    for x in range(num_targets):
+        dense = Dense(1)(drop)
+        out = Activation("sigmoid")(dense)
+        outputs.append(out)
+    model = Model(inputs=text_input, outputs=outputs)
 
     model.compile(
         loss='binary_crossentropy',

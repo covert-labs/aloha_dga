@@ -10,17 +10,20 @@ import sklearn
 from sklearn.model_selection import train_test_split
 
 
-def build_model(max_features, maxlen):
+def build_model(max_features, maxlen, num_targets=1):
     """Build LSTM model"""
 
     text_input = Input(shape = (maxlen,), name='text_input')
     x = Embedding(input_dim=max_features, input_length=maxlen, output_dim=128)(text_input)
     x = LSTM(128)(x)
-    x = Dropout(0.5)(x)
-    x = Dense(1)(x)
-    out = Activation('sigmoid')(x)
-    
-    model = Model(inputs=text_input, outputs=out)
+    drop = Dropout(0.5)(x)
+
+    outputs = []
+    for x in range(num_targets):
+        dense = Dense(1)(drop)
+        out = Activation("sigmoid")(dense)
+        outputs.append(out)
+    model = Model(inputs=text_input, outputs=outputs)
     model.compile(loss='binary_crossentropy',
                   optimizer='rmsprop')
     return model
@@ -50,7 +53,7 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
 
     for fold in range(nfolds):
         print "fold %u/%u" % (fold+1, nfolds)
-        X_train, X_test, y_train, y_test, _, label_test = train_test_split(X, y, labels, 
+        X_train, X_test, y_train, y_test, _, label_test = train_test_split(X, y, labels,
                                                                            test_size=0.2)
 
         print 'Build model...'
