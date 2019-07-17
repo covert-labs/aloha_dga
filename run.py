@@ -23,13 +23,10 @@ RESULT_FILE = 'results.pkl'
 
 def run_experiments(nfolds=10):
 
-    #
-    # TODO remove the epoch limit after functional testing
-    #
-
     options = {
         'nfolds': nfolds, 
-        'max_epoch':2
+        # enable for quick functional testing
+        # 'max_epoch':2
     }
 
     """Runs all experiments"""
