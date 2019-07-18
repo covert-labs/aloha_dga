@@ -102,8 +102,8 @@ def create_figs(nfolds=10, force=False):
     metrics = []
     for name, model_result in sorted(results['model_results'].items()):
         if model_result is not None:
-
             fpr, tpr, auc = calculate_metrics(model_result)
+            print "AUC: %s %.4f"%(name, auc)
             metrics.append({
                 'name': name,
                 'fpr': fpr,

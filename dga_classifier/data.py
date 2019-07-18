@@ -8,6 +8,7 @@ import cPickle as pickle
 import os
 import random
 import tldextract
+import numpy as np
 
 from dga_classifier.dga_generators import banjori, corebot, cryptolocker, \
     dircrypt, kraken, lockyv2, pykspa, qakbot, ramdo, ramnit, simda
@@ -141,7 +142,7 @@ def get_malware_labels(labels):
 def expand_labels(labels):
     '''
     This function takes the labels as returned from get_data()
-    and it converts them into a list of lists of 0/1 labels per 
+    and it converts them into a list of lists of 0/1 labels per
     'benign' and per each malware family
     '''
 
@@ -151,3 +152,54 @@ def expand_labels(labels):
     for malw_label in get_malware_labels(labels):
         all_Ys.append([1 if label == malw_label else 0 for label in labels])
     return all_Ys
+
+def get_labels():
+    return [
+        'main',
+        'corebot',
+        'dircrypt',
+        'kraken',
+        'pykspa',
+        'qakbot',
+        'ramnit',
+        'locky',
+        'banjori',
+        'cryptolocker',
+        'ramdo',
+        'simda',
+    ]
+
+def get_losses():
+    return {
+        'main': 'binary_crossentropy',
+        'corebot': 'binary_crossentropy',
+        'dircrypt': 'binary_crossentropy',
+        'kraken': 'binary_crossentropy',
+        'pykspa': 'binary_crossentropy',
+        'qakbot': 'binary_crossentropy',
+        'ramnit': 'binary_crossentropy',
+        'locky': 'binary_crossentropy',
+        'banjori': 'binary_crossentropy',
+        'cryptolocker': 'binary_crossentropy',
+        'ramdo': 'binary_crossentropy',
+        'simda': 'binary_crossentropy',
+    }
+
+def get_loss_weights():
+    return {
+        'main': 1.0,
+        'corebot': 0.1,
+        'dircrypt': 0.1,
+        'kraken': 0.1,
+        'pykspa': 0.1,
+        'qakbot': 0.1,
+        'ramnit': 0.1,
+        'locky': 0.1,
+        'banjori': 0.1,
+        'cryptolocker': 0.1,
+        'ramdo': 0.1,
+        'simda': 0.1,
+    }
+
+def y_list_to_dict(all_Ys):
+    return dict([(label, np.array(y)) for label, y in zip(get_labels(), all_Ys)])

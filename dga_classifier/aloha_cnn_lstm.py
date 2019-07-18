@@ -47,13 +47,14 @@ def build_model(max_features, maxlen, num_targets=1):
     drop = Dropout(.2)(flattened)
 
     outputs = []
-    for x in range(num_targets):
+    for name in data.get_labels():
         dense = Dense(1)(drop)
-        out = Activation("sigmoid")(dense)
+        out = Activation("sigmoid", name=name)(dense)
         outputs.append(out)
     model = Model(inputs=text_input, outputs=outputs)
     model.compile(
-        loss='binary_crossentropy',
+        loss=data.get_losses(),
+        loss_weights=data.get_loss_weights(),
         optimizer='rmsprop',
         metrics=['accuracy']
     )
@@ -111,7 +112,7 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
         out_data = {}
 
         for ep in range(max_epoch):
-            model.fit(X_train, all_Y_train, batch_size=batch_size, epochs=1)
+            model.fit(X_train, data.y_list_to_dict(all_Y_train), batch_size=batch_size, epochs=1)
 
             t_probs = model.predict(X_holdout)[0]
             t_auc = sklearn.metrics.roc_auc_score(y_holdout, t_probs)
