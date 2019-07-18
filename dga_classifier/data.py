@@ -179,6 +179,9 @@ def get_labels():
         'cryptolocker',
         'ramdo',
         'simda',
+        'matsnu',
+        'suppobox',
+        'gozi',
     ]
 
 def get_losses():
@@ -195,6 +198,9 @@ def get_losses():
         'cryptolocker': 'binary_crossentropy',
         'ramdo': 'binary_crossentropy',
         'simda': 'binary_crossentropy',
+        'matsnu': 'binary_crossentropy',
+        'suppobox': 'binary_crossentropy',
+        'gozi': 'binary_crossentropy',
     }
 
 def get_loss_weights():
@@ -211,6 +217,9 @@ def get_loss_weights():
         'cryptolocker': 0.1,
         'ramdo': 0.1,
         'simda': 0.1,
+        'matsnu': 0.1,
+        'suppobox': 0.1,
+        'gozi': 0.1,
     }
 
 def y_list_to_dict(all_Ys):
