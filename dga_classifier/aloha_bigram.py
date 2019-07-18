@@ -14,13 +14,17 @@ def build_model(max_features, num_targets=1):
     fc = Dense(1)(vectorized_input)
 
     outputs = []
-    for x in range(num_targets):
+    for name in data.get_labels():
         dense = Dense(1)(fc)
-        out = Activation("sigmoid")(dense)
+        out = Activation("sigmoid", name=name)(dense)
         outputs.append(out)
 
     model = Model(inputs=vectorized_input, outputs=outputs)
-    model.compile(loss='binary_crossentropy', optimizer='adam')
+    model.compile(
+        loss=data.get_losses(),
+        loss_weights=data.get_loss_weights(),
+        optimizer='adam'
+    )
 
     return model
 
@@ -71,7 +75,7 @@ def run(max_epoch=50, nfolds=10, batch_size=128):
         out_data = {}
 
         for ep in range(max_epoch):
-            model.fit(X_train.todense(), all_Y_train, batch_size=batch_size, epochs=1)
+            model.fit(X_train.todense(), data.y_list_to_dict(all_Y_train), batch_size=batch_size, epochs=1)
 
             t_probs = model.predict(X_holdout.todense())[0]
             t_auc = sklearn.metrics.roc_auc_score(y_holdout, t_probs)

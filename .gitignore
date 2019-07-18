@@ -3,4 +3,4 @@ __pycache__
 /traindata.pkl
 /results*.png
 /results.pkl
-
+/heatmap.png

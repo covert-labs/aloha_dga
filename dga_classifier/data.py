@@ -8,9 +8,11 @@ import cPickle as pickle
 import os
 import random
 import tldextract
+import numpy as np
 
 from dga_classifier.dga_generators import banjori, corebot, cryptolocker, \
-    dircrypt, kraken, lockyv2, pykspa, qakbot, ramdo, ramnit, simda
+    dircrypt, kraken, lockyv2, pykspa, qakbot, ramdo, ramnit, simda, \
+    matsnu, suppobox, gozi
 
 # Location of Alexa 1M
 ALEXA_1M = 'http://s3.amazonaws.com/alexa-static/top-1m.csv.zip'
@@ -107,6 +109,17 @@ def gen_malicious(num_per_dga=10000):
                                           base=random.randint(2, 2**32))
         labels += ['simda']*segs_size
 
+    # matsnu
+    domains += matsnu.generate_domains(num_per_dga, include_tld=False)
+    labels += ['matsnu']*num_per_dga
+
+    # suppobox
+    domains += suppobox.generate_domains(num_per_dga, include_tld=False)
+    labels += ['suppobox']*num_per_dga
+
+    # gozi
+    domains += gozi.generate_domains(num_per_dga, include_tld=False)
+    labels += ['gozi']*num_per_dga
 
     return domains, labels
 
@@ -141,7 +154,7 @@ def get_malware_labels(labels):
 def expand_labels(labels):
     '''
     This function takes the labels as returned from get_data()
-    and it converts them into a list of lists of 0/1 labels per 
+    and it converts them into a list of lists of 0/1 labels per
     'benign' and per each malware family
     '''
 
@@ -151,3 +164,63 @@ def expand_labels(labels):
     for malw_label in get_malware_labels(labels):
         all_Ys.append([1 if label == malw_label else 0 for label in labels])
     return all_Ys
+
+def get_labels():
+    return [
+        'main',
+        'corebot',
+        'dircrypt',
+        'kraken',
+        'pykspa',
+        'qakbot',
+        'ramnit',
+        'locky',
+        'banjori',
+        'cryptolocker',
+        'ramdo',
+        'simda',
+        'matsnu',
+        'suppobox',
+        'gozi',
+    ]
+
+def get_losses():
+    return {
+        'main': 'binary_crossentropy',
+        'corebot': 'binary_crossentropy',
+        'dircrypt': 'binary_crossentropy',
+        'kraken': 'binary_crossentropy',
+        'pykspa': 'binary_crossentropy',
+        'qakbot': 'binary_crossentropy',
+        'ramnit': 'binary_crossentropy',
+        'locky': 'binary_crossentropy',
+        'banjori': 'binary_crossentropy',
+        'cryptolocker': 'binary_crossentropy',
+        'ramdo': 'binary_crossentropy',
+        'simda': 'binary_crossentropy',
+        'matsnu': 'binary_crossentropy',
+        'suppobox': 'binary_crossentropy',
+        'gozi': 'binary_crossentropy',
+    }
+
+def get_loss_weights():
+    return {
+        'main': 1.0,
+        'corebot': 0.1,
+        'dircrypt': 0.1,
+        'kraken': 0.1,
+        'pykspa': 0.1,
+        'qakbot': 0.1,
+        'ramnit': 0.1,
+        'locky': 0.1,
+        'banjori': 0.1,
+        'cryptolocker': 0.1,
+        'ramdo': 0.1,
+        'simda': 0.1,
+        'matsnu': 0.1,
+        'suppobox': 0.1,
+        'gozi': 0.1,
+    }
+
+def y_list_to_dict(all_Ys):
+    return dict([(label, np.array(y)) for label, y in zip(get_labels(), all_Ys)])

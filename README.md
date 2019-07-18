@@ -1,6 +1,6 @@
 # ALOHA DGA: Applying Auxiliary Loss Optimization for Hypothesis Augmentation (ALOHA) to DGA Domain Detection
 
-This repo is based on Endgame's [dga_predict](https://github.com/endgameinc/dga_predict) code base, but it contains several extensions for my research on trying out some of the ideas from [ALOHA: Auxiliary Loss Optimization for Hypothesis Augmentation](https://arxiv.org/pdf/1903.05700.pdf) applied to DGA classifiers.
+This repo is based on Endgame's [dga_predict](https://github.com/endgameinc/dga_predict) code base, but it contains several [extensions](https://github.com/endgameinc/dga_predict/compare/master...covert-labs:master) for my research on trying out some of the ideas from [ALOHA: Auxiliary Loss Optimization for Hypothesis Augmentation](https://arxiv.org/pdf/1903.05700.pdf) applied to DGA classifiers.
 
 This repo contains 4 classifers + 4 extensions of these that use Auxiliary Loss Optimization for Hypothesis Augmentation.
 
@@ -20,6 +20,7 @@ ALOHA Extended Models (each simply use the malware family as additional labels)
 
 ```
 conda create -n dga_predict python=2.7 scikit-learn keras tensorflow-gpu matplotlib
+source activate dga_predict
 pip install tldextract
 ```
 
