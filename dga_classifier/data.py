@@ -10,7 +10,8 @@ import random
 import tldextract
 
 from dga_classifier.dga_generators import banjori, corebot, cryptolocker, \
-    dircrypt, kraken, lockyv2, pykspa, qakbot, ramdo, ramnit, simda
+    dircrypt, kraken, lockyv2, pykspa, qakbot, ramdo, ramnit, simda, \
+    matsnu, suppobox, gozi
 
 # Location of Alexa 1M
 ALEXA_1M = 'http://s3.amazonaws.com/alexa-static/top-1m.csv.zip'
@@ -107,6 +108,17 @@ def gen_malicious(num_per_dga=10000):
                                           base=random.randint(2, 2**32))
         labels += ['simda']*segs_size
 
+    # matsnu
+    domains += matsnu.generate_domains(num_per_dga, include_tld=False)
+    labels += ['matsnu']*num_per_dga
+
+    # suppobox
+    domains += suppobox.generate_domains(num_per_dga, include_tld=False)
+    labels += ['suppobox']*num_per_dga
+
+    # gozi
+    domains += gozi.generate_domains(num_per_dga, include_tld=False)
+    labels += ['gozi']*num_per_dga
 
     return domains, labels
 
