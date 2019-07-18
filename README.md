@@ -20,6 +20,7 @@ ALOHA Extended Models (each simply use the malware family as additional labels)
 
 ```
 conda create -n dga_predict python=2.7 scikit-learn keras tensorflow-gpu matplotlib
+source activate dga_predict
 pip install tldextract
 ```
 
