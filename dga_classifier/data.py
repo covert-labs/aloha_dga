@@ -10,6 +10,13 @@ import random
 import tldextract
 import numpy as np
 
+import math
+from collections import Counter
+
+def entropy(s):
+    p, lns = Counter(s), float(len(s))
+    return -sum( count/lns * math.log(count/lns, 2) for count in p.values())
+
 from dga_classifier.dga_generators import banjori, corebot, cryptolocker, \
     dircrypt, kraken, lockyv2, pykspa, qakbot, ramdo, ramnit, simda, \
     matsnu, suppobox, gozi
@@ -136,7 +143,9 @@ def gen_data(force=False):
         domains += get_alexa(len(domains))
         labels += ['benign']*len(domains)
 
-        pickle.dump(zip(labels, domains), open(DATA_FILE, 'w'))
+        domain_entropy = [entropy(domain) for domain in domains]
+
+        pickle.dump(zip(labels, domains, domain_entropy), open(DATA_FILE, 'w'))
 
 def get_data(force=False):
     """Returns data and labels"""
@@ -151,7 +160,7 @@ def get_malware_labels(labels):
     return malware_labels
 
 
-def expand_labels(labels):
+def expand_labels(labels, entropy=None):
     '''
     This function takes the labels as returned from get_data()
     and it converts them into a list of lists of 0/1 labels per
@@ -163,6 +172,10 @@ def expand_labels(labels):
     all_Ys = [y]
     for malw_label in get_malware_labels(labels):
         all_Ys.append([1 if label == malw_label else 0 for label in labels])
+    
+    if entropy:
+        all_Ys.append(entropy)
+    
     return all_Ys
 
 def get_labels():
@@ -182,6 +195,7 @@ def get_labels():
         'matsnu',
         'suppobox',
         'gozi',
+        'entropy',
     ]
 
 def get_losses():
@@ -201,6 +215,7 @@ def get_losses():
         'matsnu': 'binary_crossentropy',
         'suppobox': 'binary_crossentropy',
         'gozi': 'binary_crossentropy',
+        'entropy': 'mse',
     }
 
 def get_loss_weights():
@@ -220,6 +235,27 @@ def get_loss_weights():
         'matsnu': 0.1,
         'suppobox': 0.1,
         'gozi': 0.1,
+        'entropy': 0.1,
+    }
+
+def get_metrics():
+    return {
+        'main': 'accuracy',
+        'corebot': 'accuracy',
+        'dircrypt': 'accuracy',
+        'kraken': 'accuracy',
+        'pykspa': 'accuracy',
+        'qakbot': 'accuracy',
+        'ramnit': 'accuracy',
+        'locky': 'accuracy',
+        'banjori': 'accuracy',
+        'cryptolocker': 'accuracy',
+        'ramdo': 'accuracy',
+        'simda': 'accuracy',
+        'matsnu': 'accuracy',
+        'suppobox': 'accuracy',
+        'gozi': 'accuracy',
+        'entropy': 'mse'
     }
 
 def y_list_to_dict(all_Ys):

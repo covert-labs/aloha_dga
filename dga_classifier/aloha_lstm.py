@@ -21,14 +21,19 @@ def build_model(max_features, maxlen, num_targets=1):
 
     outputs = []
     for name in data.get_labels():
+        activation = 'sigmoid'
+        if name == 'entropy':
+            activation = 'linear'
+
         dense = Dense(1)(drop)
-        out = Activation("sigmoid", name=name)(dense)
+        out = Activation(activation, name=name)(dense)
         outputs.append(out)
     model = Model(inputs=text_input, outputs=outputs)
     model.compile(
         loss=data.get_losses(),
         loss_weights=data.get_loss_weights(),
-        optimizer='rmsprop'
+        optimizer='rmsprop',
+        metrics=data.get_metrics()
     )
     return model
 
@@ -39,6 +44,7 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
     # Extract data and labels
     X = [x[1] for x in indata]
     labels = [x[0] for x in indata]
+    entropy = [x[2] for x in indata]
 
     # Generate a dictionary of valid characters
     valid_chars = {x:idx+1 for idx, x in enumerate(set(''.join(X)))}
@@ -51,7 +57,7 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
     X = sequence.pad_sequences(X, maxlen=maxlen)
 
     malware_labels = data.get_malware_labels(labels)
-    all_Ys = data.expand_labels(labels)
+    all_Ys = data.expand_labels(labels, entropy=entropy)
 
     final_data = []
 
