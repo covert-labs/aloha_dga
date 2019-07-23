@@ -13,7 +13,7 @@ from keras.layers.pooling import GlobalMaxPooling1D
 from keras.layers.recurrent import LSTM
 
 
-def build_model(max_features, maxlen, num_targets=1):
+def build_model(max_features, maxlen):
     '''
     [Deep Learning For Realtime Malware Detection (ShmooCon 2018)](https://www.youtube.com/watch?v=99hniQYB6VM)'s 
     LSTM + CNN (see 13:17 for architecture) by Domenic Puzio and Kate Highnam
@@ -102,7 +102,7 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
             all_Y_train.append(dga_training_test[idx])
 
         print 'Build model...'
-        model = build_model(max_features, maxlen, num_targets=len(malware_labels) + 1)
+        model = build_model(max_features, maxlen)
 
         print "Train..."
         train_test = train_test_split(X_train, *all_Y_train, test_size=0.05, stratify=label_train)
@@ -134,6 +134,13 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
                             'confusion_matrix': sklearn.metrics.confusion_matrix(y_test, probs > .5)}
 
                 print sklearn.metrics.confusion_matrix(y_test, probs > .5)
+                data.save_model(
+                    model, 
+                    __name__, 
+                    fold, 
+                    ep, 
+                    config={'max_features': max_features, 'maxlen': maxlen}
+                )
             else:
                 # No longer improving...break and calc statistics
                 if (ep-best_iter) > 2:
@@ -142,3 +149,6 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
         final_data.append(out_data)
 
     return final_data
+
+def load_model(filename):
+    return data.load_model(filename, build_model)

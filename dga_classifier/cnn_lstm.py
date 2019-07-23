@@ -114,6 +114,14 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
                             'confusion_matrix': sklearn.metrics.confusion_matrix(y_test, probs > .5)}
 
                 print sklearn.metrics.confusion_matrix(y_test, probs > .5)
+
+                data.save_model(
+                    model, 
+                    __name__, 
+                    fold, 
+                    ep, 
+                    config={'max_features': max_features, 'maxlen': maxlen}
+                )
             else:
                 # No longer improving...break and calc statistics
                 if (ep-best_iter) > 2:
@@ -123,3 +131,6 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
 
     return final_data
 
+
+def load_model(filename):
+    return data.load_model(filename, build_model)

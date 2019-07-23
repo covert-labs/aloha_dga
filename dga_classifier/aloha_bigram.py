@@ -8,7 +8,7 @@ from sklearn import feature_extraction
 from sklearn.model_selection import train_test_split
 
 
-def build_model(max_features, num_targets=1):
+def build_model(max_features):
     """Builds logistic regression model"""
     vectorized_input = Input(shape = (max_features,), name='text_input')
     fc = Dense(1)(vectorized_input)
@@ -67,7 +67,7 @@ def run(max_epoch=50, nfolds=10, batch_size=128):
             all_Y_train.append(dga_training_test[idx])
 
         print 'Build model...'
-        model = build_model(max_features, num_targets=len(malware_labels) + 1)
+        model = build_model(max_features)
 
         print "Train..."
         train_test = train_test_split(X_train, *all_Y_train, test_size=0.05, stratify=label_train)
@@ -99,6 +99,14 @@ def run(max_epoch=50, nfolds=10, batch_size=128):
                             'confusion_matrix': sklearn.metrics.confusion_matrix(y_test, probs > .5)}
 
                 print sklearn.metrics.confusion_matrix(y_test, probs > .5)
+
+                data.save_model(
+                    model, 
+                    __name__, 
+                    fold, 
+                    ep, 
+                    config={'max_features': max_features}
+                )
             else:
                 # No longer improving...break and calc statistics
                 if (ep-best_iter) > 5:
@@ -107,3 +115,6 @@ def run(max_epoch=50, nfolds=10, batch_size=128):
         final_data.append(out_data)
 
     return final_data
+
+def load_model(filename):
+    return data.load_model(filename, build_model)

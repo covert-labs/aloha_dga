@@ -3,7 +3,7 @@ from datetime import datetime
 from StringIO import StringIO
 from urllib import urlopen
 from zipfile import ZipFile
-
+import json
 import cPickle as pickle
 import os
 import random
@@ -260,3 +260,15 @@ def get_metrics():
 
 def y_list_to_dict(all_Ys):
     return dict([(label, np.array(y)) for label, y in zip(get_labels(), all_Ys)])
+
+def save_model(model, name, fold, epoch, config=None):
+    model.save_weights("models/{}_fold{}_ep{}.h5".format(name, fold, epoch))
+    with open("models/{}_fold{}_ep{}.json".format(name, fold, epoch), 'w') as outf:
+        json.dump(config, outf)
+
+def load_model(filename, build_model):
+    with open("{}.json".format(filename), 'r') as inf:
+        config = json.load(inf)
+        model = build_model(**config)
+        model.load_weights('{}.h5'.format(filename))
+        return model

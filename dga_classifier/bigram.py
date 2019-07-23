@@ -18,7 +18,6 @@ def build_model(max_features):
 
     return model
 
-
 def run(max_epoch=50, nfolds=10, batch_size=128):
     """Run train/test on logistic regression model"""
     indata = data.get_data()
@@ -43,7 +42,6 @@ def run(max_epoch=50, nfolds=10, batch_size=128):
         print "fold %u/%u" % (fold+1, nfolds)
         X_train, X_test, y_train, y_test, _, label_test = train_test_split(count_vec, y,
                                                                            labels, test_size=0.2)
-
         print 'Build model...'
         model = build_model(max_features)
 
@@ -71,6 +69,14 @@ def run(max_epoch=50, nfolds=10, batch_size=128):
                             'confusion_matrix': sklearn.metrics.confusion_matrix(y_test, probs > .5)}
 
                 print sklearn.metrics.confusion_matrix(y_test, probs > .5)
+
+                data.save_model(
+                    model, 
+                    __name__, 
+                    fold, 
+                    ep, 
+                    config={'max_features': max_features}
+                )
             else:
                 # No longer improving...break and calc statistics
                 if (ep-best_iter) > 5:
@@ -79,3 +85,6 @@ def run(max_epoch=50, nfolds=10, batch_size=128):
         final_data.append(out_data)
 
     return final_data
+
+def load_model(filename):
+    return data.load_model(filename, build_model)

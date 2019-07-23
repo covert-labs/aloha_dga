@@ -11,7 +11,7 @@ import sklearn
 from sklearn.model_selection import train_test_split
 
 
-def build_model(max_features, maxlen, num_targets=1):
+def build_model(max_features, maxlen):
     """Build LSTM model"""
 
     text_input = Input(shape = (maxlen,), name='text_input')
@@ -72,7 +72,7 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
             all_Y_train.append(dga_training_test[idx])
 
         print 'Build model...'
-        model = build_model(max_features, maxlen, num_targets=len(malware_labels) + 1)
+        model = build_model(max_features, maxlen)
 
         print "Train..."
         train_test = train_test_split(X_train, *all_Y_train, test_size=0.05, stratify=label_train)
@@ -104,6 +104,13 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
                             'confusion_matrix': sklearn.metrics.confusion_matrix(y_test, probs > .5)}
 
                 print sklearn.metrics.confusion_matrix(y_test, probs > .5)
+                data.save_model(
+                    model, 
+                    __name__, 
+                    fold, 
+                    ep, 
+                    config={'max_features': max_features, 'maxlen': maxlen}
+                )
             else:
                 # No longer improving...break and calc statistics
                 if (ep-best_iter) > 2:
@@ -113,3 +120,6 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
 
     return final_data
 
+
+def load_model(filename):
+    return data.load_model(filename, build_model)
